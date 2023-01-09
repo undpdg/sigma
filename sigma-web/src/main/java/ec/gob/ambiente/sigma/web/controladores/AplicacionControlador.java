@@ -134,6 +134,9 @@ public class AplicacionControlador implements Serializable {
 	private List<Catalog> lstCatEjeTematicoShapeNivel1;
 	private List<Catalog> lstCatEjeTematicoShapeTodo;
 	
+	private List<Catalog> lstCatCamposObjGeoREDD;
+	
+	
 	
 	private List<Object[]> lstGeoLocProvincias;
 	private List<Object[]> lstGeoLocCantones;
@@ -152,6 +155,7 @@ public class AplicacionControlador implements Serializable {
 	private List<Safeguard> lstSalvaguardasTemp;
 	
 	private String pathUploads;
+	private String os;
 	//max size in bytes
 	private String maxSizeZipShape;
 	
@@ -180,11 +184,20 @@ public class AplicacionControlador implements Serializable {
 			cargarUtilitarios();
 			FacesContext context = FacesContext.getCurrentInstance();
 			bundle = context.getApplication().evaluateExpressionGet(context, "#{txt}", ResourceBundle.class);
+			cargarSistemaOperativo();
 			//temp
-			pathUploads="/opt/wildfly/sigma/uploads";
 			maxSizeZipShape="7000000";
 		} catch (Exception ex) {
 			LOG.log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	private void cargarSistemaOperativo(){
+		String osp = System.getProperty("os.name");
+		if(osp.toUpperCase().contains("WINDOWS")){
+			os="WINDOWS";
+		}else{
+			os="LINUX";
 		}
 	}
 
@@ -270,6 +283,11 @@ public class AplicacionControlador implements Serializable {
 			lstNemonicos.add("CAT_EJES_TEMATICOS_GEO");
 			lstCatEjeTematicoShapeNivel1=new ArrayList<>();
 			lstCatEjeTematicoShapeTodo=new ArrayList<>();
+			
+			lstNemonicos.add("CAT_OBJ_GEO_REDD");
+			lstCatCamposObjGeoREDD=new ArrayList<>();
+			
+			
 			
 			List<Catalog> lstCatalogos = catalogoFacade.listarCatalogosPorNemonicosTipos(lstNemonicos);
 
@@ -408,6 +426,10 @@ public class AplicacionControlador implements Serializable {
 					}
 					
 				}
+				
+				if(c.getCatyId().getCatyMnemonic().equals("CAT_OBJ_GEO_REDD")){
+					lstCatCamposObjGeoREDD.add(c);
+				}
 
 			}
 
@@ -449,6 +471,9 @@ public class AplicacionControlador implements Serializable {
 				}
 				if(String.valueOf(ob[0]).equals("sigma.web.services.password")){
 					sigmaWebServicesPassword=String.valueOf(ob[1]);
+				}
+				if(String.valueOf(ob[0]).equals("sigma.web.uploadshape.path")){
+					pathUploads=String.valueOf(ob[1]);
 				}
 			}
 		}catch (Exception ex) {
@@ -669,6 +694,16 @@ public class AplicacionControlador implements Serializable {
 	public List<Catalog> listarSubCatObjPorCat(Integer idPadre){
 		List<Catalog> lst=new ArrayList<>();
 		for(Catalog c: lstCatSubCatObj){
+			if(c.getCataParentId()!=null&&c.getCataParentId().getCataId()==idPadre){
+				lst.add(c);
+			}
+		}
+		return lst;
+	}
+	
+	public List<Catalog> listarCatalogoHijoPorIdPadre(List<Catalog> catalogoHijoTotal, int idPadre){
+		List<Catalog> lst=new ArrayList<>();
+		for(Catalog c: catalogoHijoTotal){
 			if(c.getCataParentId()!=null&&c.getCataParentId().getCataId()==idPadre){
 				lst.add(c);
 			}
@@ -1272,6 +1307,25 @@ public class AplicacionControlador implements Serializable {
 	public void setLstCatTypes(List<CatalogsType> lstCatTypes) {
 		this.lstCatTypes = lstCatTypes;
 	}
+
+	public String getOs() {
+		return os;
+	}
+
+	public void setOs(String os) {
+		this.os = os;
+	}
+
+	public List<Catalog> getLstCatCamposObjGeoREDD() {
+		return lstCatCamposObjGeoREDD;
+	}
+
+	public void setLstCatCamposObjGeoREDD(List<Catalog> lstCatCamposObjGeoREDD) {
+		this.lstCatCamposObjGeoREDD = lstCatCamposObjGeoREDD;
+	}
+
+	
+	
 	
 	
 
